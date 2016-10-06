@@ -7,10 +7,19 @@ public class ClientEntity {
 
     private ChatClientInt a = null;
     private String nickname = null;
+    private boolean alive = false;
 
     public ClientEntity(ChatClientInt a){
         this.a = a;
         this.nickname = "Guest";
+    }
+
+    public void setAlive(boolean status){
+        alive = status;
+    }
+
+    public boolean isAlive(){
+        return alive;
     }
 
     public void writeTo(String message){
@@ -23,6 +32,10 @@ public class ClientEntity {
 
     public String getNickname(){
         return nickname;
+    }
+
+    public void setNickname(String nick){
+        nickname = nick;
     }
 
     public ChatClientInt getInterface(){

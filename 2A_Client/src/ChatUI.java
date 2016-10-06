@@ -4,6 +4,8 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.server.ExportException;
 import java.util.*;
 
 public class ChatUI{
@@ -11,20 +13,22 @@ public class ChatUI{
     private ChatServerInt server;
     public void doConnect(){
         if (connect.getText().equals("Connect")){
-            if (name.getText().length()<2){JOptionPane.showMessageDialog(frame, "You need to type a name."); return;}
-            if (ip.getText().length()<2){JOptionPane.showMessageDialog(frame, "You need to type an IP."); return;}
+            if (IP.getText().isEmpty()){JOptionPane.showMessageDialog(frame, "You need to type a IP address."); return;}
             try{
-                client=new ChatClient(name.getText());
+                client=new ChatClient(IP.getText());
                 client.setGUI(this);
-                server=(ChatServerInt)Naming.lookup("rmi://"+ip.getText()+"/chat");
+                server=(ChatServerInt)Naming.lookup("rmi://"+ IP.getText() +"/chat");
                 server.login(client);
-                updateUsers(server.getConnected());
                 connect.setText("Disconnect");
-            }catch(Exception e){e.printStackTrace();JOptionPane.showMessageDialog(frame, "ERROR, we wouldn't connect....");}
+            }catch(Exception e){JOptionPane.showMessageDialog(frame, "ERROR, we wouldn't connect....");}
         }else{
-            updateUsers(null);
-            connect.setText("Connect");
-            //Better to implement Logout ....
+            try{
+                connect.setText("Connect");
+                server.disconnect(client);
+            }catch (Exception e){
+                System.out.println("Could not disconnect");
+                System.exit(-1);
+            }
         }
     }
 
@@ -34,27 +38,45 @@ public class ChatUI{
         }
         String st=tf.getText();
         tf.setText("");
-        //Remove if you are going to implement for remote invocation
         try{
-            server.publish(st, client);
+            tx.append("\n"+ "[YOU]: " +st);
             server.broadcast(st, client);
-        }catch(Exception e){e.printStackTrace();}
+            if(st.toLowerCase().equals("/quit")){
+                System.exit(1);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
 
-    public void writeMsg(String st){  tx.setText(tx.getText()+"\n"+st);  }
-
-    public void updateUsers(Vector v){
-        DefaultListModel listModel = new DefaultListModel();
-        if(v!=null) for (int i=0;i<v.size();i++){
-            try{  String tmp=((ChatClientInt)v.get(i)).getName();
-                listModel.addElement(tmp);
-            }catch(Exception e){e.printStackTrace();}
+    public void writeMsg(String st){
+        String s = Character.toString(st.charAt(0));
+        if(s.equals("/")){
+            commands(st);
+        }else{
+            tx.setText(tx.getText()+"\n"+st);
         }
-        lst.setModel(listModel);
+    }
+
+    private void commands(String commandString){
+        String[] command = commandString.split(" ");
+        switch (command[0].toLowerCase()){
+
+            case "/alive":
+                try{
+                    server.broadcast("/alive", client);
+                }catch (RemoteException e){
+                    System.out.println("Remote exception");
+                }
+                break;
+            default:
+                System.out.println("not valid command from server");
+                break;
+        }
     }
 
     public static void main(String [] args){
-        System.out.println("Hello World !");
         ChatUI c=new ChatUI();
     }
 
@@ -65,9 +87,8 @@ public class ChatUI{
         JPanel top =new JPanel();
         JPanel cn =new JPanel();
         JPanel bottom =new JPanel();
-        ip=new JTextField();
         tf=new JTextField();
-        name=new JTextField();
+        IP = new JTextField();
         tx=new JTextArea();
         connect=new JButton("Connect");
         JButton bt=new JButton("Send");
@@ -76,8 +97,8 @@ public class ChatUI{
         top.setLayout(new GridLayout(1,0,5,5));
         cn.setLayout(new BorderLayout(5,5));
         bottom.setLayout(new BorderLayout(5,5));
-        top.add(new JLabel("Your name: "));top.add(name);
-        top.add(new JLabel("Server Address: "));top.add(ip);
+        top.add(new JLabel("IP address: "));top.add(IP);
+
         top.add(connect);
         cn.add(new JScrollPane(tx), BorderLayout.CENTER);
         cn.add(lst, BorderLayout.EAST);
@@ -88,6 +109,22 @@ public class ChatUI{
         main.add(bottom, BorderLayout.SOUTH);
         main.setBorder(new EmptyBorder(10, 10, 10, 10) );
         //Events
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                try{
+                    if(client != null){
+                        server.disconnect(client);
+                    }
+                }catch (RemoteException ee){
+                    System.out.println(ee);
+                }finally {
+                    System.exit(1);
+                }
+
+            }
+        });
         connect.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){ doConnect();   }  });
         bt.addActionListener(new ActionListener(){
@@ -100,7 +137,7 @@ public class ChatUI{
         frame.setVisible(true);
     }
     JTextArea tx;
-    JTextField tf,ip, name;
+    JTextField tf, IP;
     JButton connect;
     JList lst;
     JFrame frame;
