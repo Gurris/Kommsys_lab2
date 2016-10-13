@@ -13,7 +13,7 @@ public class GUI {
     private Client client;
 
     JTextArea textArea;
-    JTextField tf, IP;
+    JTextField message, IP;
     JButton connect;
     JFrame frame;
 
@@ -28,7 +28,7 @@ public class GUI {
         JPanel bottom =new JPanel();
 
         //creating buttons and text fields
-        tf=new JTextField();
+        message=new JTextField();
         IP = new JTextField(); // IP textfield
         textArea=new JTextArea();
         connect=new JButton("Connect");
@@ -49,7 +49,7 @@ public class GUI {
         center.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
         //bottom part of GUI
-        bottom.add(tf, BorderLayout.CENTER);
+        bottom.add(message, BorderLayout.CENTER);
         bottom.add(bt, BorderLayout.EAST);
 
         //connecting all panels to one
@@ -71,14 +71,12 @@ public class GUI {
             }
         });
 
-        connect.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){ connectToServer();   }  });
 
-        bt.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){ sendText();   }  });
+        connect.addActionListener(e -> connectToServer());
 
-        tf.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){ sendText();   }  });
+        bt.addActionListener(e -> sendText());
+
+        message.addActionListener(e -> sendText());
 
         frame.setContentPane(wrapper);
         frame.setSize(600,600);
@@ -110,8 +108,8 @@ public class GUI {
             return;
         }
 
-        String st=tf.getText();
-        tf.setText("");
+        String st=message.getText();
+        message.setText("");
         if(st.equals(null) || st.equals(""))
             return;
 
@@ -122,6 +120,5 @@ public class GUI {
     public void writeMsg(String st){
         textArea.setText(textArea.getText()+"\n"+st);
     }
-
 
 }
