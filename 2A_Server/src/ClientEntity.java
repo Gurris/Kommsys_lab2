@@ -1,15 +1,16 @@
-import java.rmi.RemoteException;
+import Interface.*;
+
 
 /**
  * Created by Gurris on 2016-09-24.
  */
 public class ClientEntity {
 
-    private ChatClientInt a = null;
+    private IClient a = null;
     private String nickname = null;
-    private boolean alive = false;
+    private boolean alive = true;
 
-    public ClientEntity(ChatClientInt a){
+    public ClientEntity(IClient a){
         this.a = a;
         this.nickname = "Guest";
     }
@@ -24,9 +25,9 @@ public class ClientEntity {
 
     public void writeTo(String message){
         try{
-            a.tell(message);
+            a.writeTo(message);
         }catch (Exception e){
-
+            e.printStackTrace();
         }
     }
 
@@ -38,7 +39,7 @@ public class ClientEntity {
         nickname = nick;
     }
 
-    public ChatClientInt getInterface(){
+    public IClient getInterface(){
         return a;
     }
 
