@@ -1,12 +1,12 @@
-import Interface.IServer;
-
 import javax.swing.*;
 import javax.swing.border.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.rmi.Naming;
-import java.rmi.RemoteException;
+
+//Simple GUI from:
+//http://www.ejbtutorial.com/programming/java-rmi-example-simple-chat-program-between-server-and-client
+
 
 public class GUI {
 
@@ -16,6 +16,7 @@ public class GUI {
     JTextField message, IP;
     JButton connect;
     JFrame frame;
+    JLabel serverStatus;
 
     public GUI(Client c){
         this.client = c;
@@ -33,6 +34,8 @@ public class GUI {
         textArea=new JTextArea();
         connect=new JButton("Connect");
         JButton bt=new JButton("Send");
+        serverStatus = new JLabel("status");
+        serverStatus.setForeground(Color.RED);
 
         //setting layouts for the panels
         wrapper.setLayout(new BorderLayout(5,5));
@@ -83,7 +86,7 @@ public class GUI {
         frame.setVisible(true);
     }
 
-    public void connectToServer(){
+    private void connectToServer(){
         if (connect.getText().equals("Connect")){
             if (IP.getText().isEmpty()){
                 JOptionPane.showMessageDialog(frame, "Enter a address!");
@@ -100,6 +103,11 @@ public class GUI {
             connect.setText("Connect");
             client.disconnectFromServer();
         }
+    }
+
+    public void disconnectedFromServer(){
+        JOptionPane.showMessageDialog(frame, "Disconnected from server!");
+        connect.setText("Connect");
     }
 
     public void sendText(){

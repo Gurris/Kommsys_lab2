@@ -1,5 +1,7 @@
 import Interface.*;
 
+import java.rmi.RemoteException;
+
 
 /**
  * Created by Gurris on 2016-09-24.
@@ -9,6 +11,7 @@ public class ClientEntity {
     private IClient a = null;
     private String nickname = null;
     private boolean alive = true;
+    private Object writeLock = new Object();
 
     public ClientEntity(IClient a){
         this.a = a;
@@ -23,12 +26,11 @@ public class ClientEntity {
         return alive;
     }
 
-    public void writeTo(String message){
-        try{
+    public void writeTo(String message)throws RemoteException{
+        synchronized (writeLock){
             a.writeTo(message);
-        }catch (Exception e){
-            e.printStackTrace();
         }
+
     }
 
     public String getNickname(){

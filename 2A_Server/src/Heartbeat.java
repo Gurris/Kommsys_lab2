@@ -18,7 +18,7 @@ public class Heartbeat extends  Thread{
                 if(clients.size() != 0){
                     setFalse(clients);
                     for(int i=0; i<clients.size(); i++){
-                        clients.get(i).writeTo("/alive");
+                        server.singleClientMsg("/alive", clients.get(i));
                     }
                     Thread.sleep(10000); // will sleep for 10 seconds. If clients have not responded in time they will be removed
                     for(int i=0; i<clients.size(); i++){
@@ -31,7 +31,7 @@ public class Heartbeat extends  Thread{
                 }
 
             }catch (Exception e){
-                System.out.println("Exception in heartbeat thread: " + e);
+                e.printStackTrace();
             }
         }
 

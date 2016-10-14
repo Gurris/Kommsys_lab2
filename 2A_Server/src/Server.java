@@ -14,9 +14,7 @@ public class Server extends UnicastRemoteObject implements Interface.IServer {
     }
 
     private void serverMessage(String message){
-        for(int i=0; i<clients.size(); i++){
-            clients.get(i).writeTo("[System]: " + message);
-        }
+        broadcast("[System]: " + message);
     }
 
     public boolean login(IClient a) throws RemoteException{
@@ -31,16 +29,17 @@ public class Server extends UnicastRemoteObject implements Interface.IServer {
         return clients;
     }
 
-    public void disconnect(IClient ci){
+    public synchronized void disconnect(IClient ci){
         for(int i=0; i<clients.size(); i++){
             if(clients.get(i).getInterface().equals(ci)){
                 System.out.println("Removing client: " + clients.get(i).getNickname());
                 clients.remove(i);
+                break;
             }
         }
     }
 
-    public void broadcast(String message, IClient ci) throws RemoteException{
+    public void broadcast(String message, IClient ci){ // TO ALL EXCEPT SENDER
         if(message.equals(null))
             return;
 
@@ -50,10 +49,39 @@ public class Server extends UnicastRemoteObject implements Interface.IServer {
             message = messageFormat(message, ci);
             for(int i=0; i<clients.size(); i++){
                 if(!clients.get(i).getInterface().equals(ci)){
-                    clients.get(i).writeTo(message);
+                    try{
+                        clients.get(i).writeTo(message);
+                    }catch (Exception e){
+                        System.out.println("Could not write to client: " + clients.get(i).getNickname()+". --Removing!");
+                        disconnect(clients.get(i).getInterface());
+                    }
+
                 }
 
             }
+        }
+    }
+
+    public void broadcast(String message){ // TO ALL
+        if(message.equals(null))
+            return;
+
+        for(int i=0; i<clients.size(); i++){
+            try{
+                clients.get(i).writeTo(message);
+            }catch (Exception e){
+                System.out.println("Could not write to client: " + clients.get(i).getNickname()+". --Removing!");
+                disconnect(clients.get(i).getInterface());
+            }
+        }
+    }
+
+    public void singleClientMsg(String message, ClientEntity client){
+        try{
+            client.writeTo(message);
+        }catch (Exception e){
+            System.out.println("Could not write to client! Removing");
+            disconnect(client.getInterface());
         }
     }
 
@@ -67,7 +95,7 @@ public class Server extends UnicastRemoteObject implements Interface.IServer {
         return null;
     }
 
-    private void commandHandler(String commandString, IClient ci){
+    private synchronized void commandHandler(String commandString, IClient ci){
         ClientEntity tmp = getClient(ci);
         if(tmp.equals(null))
             return;
@@ -86,19 +114,19 @@ public class Server extends UnicastRemoteObject implements Interface.IServer {
                 for(int i=0; i<clients.size(); i++){
                     users += clients.get(i).getNickname() + ", ";
                 }
-                tmp.writeTo("[System]: " + users);
+                singleClientMsg("[System]: " + users, tmp);
                 break;
             case "/nick":
                 for(int i=0; i<clients.size(); i++){
                     if(command[1].toLowerCase().equals(clients.get(i).getNickname().toLowerCase()) || command[1].toLowerCase().contains("system") || command[1].toLowerCase().contains("you")){
-                        tmp.writeTo("[System]: Invalid nickname!");
+                        singleClientMsg("[System]: Invalid nickname!", tmp);
                         return;
                     }
                 }
                 tmp.setNickname(command[1]);
                 break;
             case "/help":
-                tmp.writeTo("[System]: " + "/quit - leave, /who - list of all users, /nick <nickname> - change your nickname, /help - list of available commands");
+                singleClientMsg("[System]: " + "/quit - leave, /who - list of all users, /nick <nickname> - change your nickname, /help - list of available commands", tmp);
                 break;
             default:
                 System.out.println("Client sent invalid command!");

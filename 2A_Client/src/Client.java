@@ -8,9 +8,13 @@ public class Client extends UnicastRemoteObject implements Interface.IClient {
 
     private GUI ui;
     private IServer server;
+    private boolean serverStatusIsUp;
+    private boolean recivedAlive;
 
     public Client() throws RemoteException {
         ui = new GUI(this);
+        Heartbeat hb = new Heartbeat(this);
+        hb.start();
     }
 
     public void writeTo(String st) throws RemoteException{
@@ -29,6 +33,7 @@ public class Client extends UnicastRemoteObject implements Interface.IClient {
         switch (command[0].toLowerCase()){
 
             case "/alive":
+                setGotAlive(true);
                 broadcast("/alive");
                 break;
             default:
@@ -41,6 +46,7 @@ public class Client extends UnicastRemoteObject implements Interface.IClient {
         try{
             server=(IServer)Naming.lookup("rmi://"+ ip +"/chat");
             server.login(this);
+            setServerStatusIsUp(true);
             return true;
         }catch(Exception e){
             System.out.println(e);
@@ -51,6 +57,7 @@ public class Client extends UnicastRemoteObject implements Interface.IClient {
     public void disconnectFromServer(){
         try{
             server.disconnect(this);
+            setServerStatusIsUp(false);
         }catch (Exception e){
             System.out.println(e);
         }
@@ -62,6 +69,26 @@ public class Client extends UnicastRemoteObject implements Interface.IClient {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    public void serverCrash(){
+        ui.disconnectedFromServer();
+    }
+
+    public synchronized void setServerStatusIsUp(boolean status){
+        serverStatusIsUp = status;
+    }
+
+    public synchronized boolean getServerStatusIsUp(){
+        return serverStatusIsUp;
+    }
+
+    public synchronized boolean gotAlive(){
+        return recivedAlive;
+    }
+
+    public synchronized void setGotAlive(boolean status){
+        recivedAlive = status;
     }
 
 }

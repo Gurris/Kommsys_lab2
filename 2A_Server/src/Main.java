@@ -1,6 +1,5 @@
 import java.rmi.*;
 
-//http://www.ejbtutorial.com/programming/java-rmi-example-simple-chat-program-between-server-and-client
 public class Main {
     public static void main(String[] args) {
         try {
