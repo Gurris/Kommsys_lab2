@@ -21,7 +21,6 @@ public class Client extends UnicastRemoteObject implements Interface.IClient {
         String s = Character.toString(st.charAt(0));
         System.out.println("Received: " + st);
         if(s.equals("/")){
-            System.out.println("COMMAND!");
             commands(st);
         }else{
             ui.writeMsg(st);
@@ -67,7 +66,9 @@ public class Client extends UnicastRemoteObject implements Interface.IClient {
         try{
             server.broadcast(message, this);
         }catch (Exception e){
-            e.printStackTrace();
+            System.out.println("Could not send message to server. Did it crash?");
+            disconnectFromServer();
+            serverCrash();
         }
     }
 

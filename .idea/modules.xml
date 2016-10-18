@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/2A_Client/2A_Client.iml" filepath="$PROJECT_DIR$/2A_Client/2A_Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/2A_Server/2A_Server.iml" filepath="$PROJECT_DIR$/2A_Server/2A_Server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/2B_exampleCodeTest/2B_exampleCodeTest.iml" filepath="$PROJECT_DIR$/2B_exampleCodeTest/2B_exampleCodeTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/Kommsys_lab2.iml" filepath="$PROJECT_DIR$/Kommsys_lab2.iml" />
       <module fileurl="file://$PROJECT_DIR$/untitled/untitled.iml" filepath="$PROJECT_DIR$/untitled/untitled.iml" />
     </modules>
